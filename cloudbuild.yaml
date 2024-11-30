@@ -1,0 +1,31 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/iron-dynamics-440303-r9/fastapi-app:lastest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/iron-dynamics-440303-r9/fastapi-app:lastest']
+# Deploy container image to Cloud Run
+  #- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   # entrypoint: gcloud
+    #args: ['run', 'deploy', 'fast-api-test', '--image', 'gcr.io/iron-dynamics-440303-r9/fastapi-app:lastest', '--region', 'us-central1', '--platform', 'managed', --allow-unauthenticated]
+  
+  # authenticate to GKE
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials text-generator --zone us-central1-a --project iron-dynamics-440303-r9
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+        kubectl apply -f kubernetes/deployment.yaml
+        kubectl apply -f kubernetes/service.yaml
+
+images:
+  - 'gcr.io/iron-dynamics-440303-r9/fastapi-app:lastest'
+
